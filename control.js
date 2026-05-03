@@ -9,7 +9,7 @@ const APP_ID = 'walkie-ptt-v3';
 const LOBBY_CODE = 'walkie-lobby-v1';
 const SETTINGS_KEY = 'walktalk-v2-settings';
 const ACTIVITY_KEY = 'walktalk-v2-activity';
-const DEFAULT_SETTINGS = { deviceName: '', defaultChannel: 7, audioAlerts: true, vibration: true, autoJoin: false, tapLock: false };
+const DEFAULT_SETTINGS = { deviceName: '', defaultChannel: 7, audioAlerts: true, vibration: true, autoJoin: false, tapLock: false, muted: false };
 const ROOM_PRESETS = [['Home',7], ['Kitchen',8], ['Bedroom',9], ['Office',10], ['Garage',11], ['Upstairs',12]];
 const QUICK_MESSAGES = ['Call me', 'Need help', 'Open the door', 'All good'];
 
@@ -47,6 +47,14 @@ const els = {
   closeQr: document.getElementById('close-board-qr-btn'),
   copyLink: document.getElementById('copy-board-link-btn'),
   copyLinkModal: document.getElementById('copy-board-link-btn-modal'),
+  settingsCard: document.getElementById('board-settings-card'),
+  deviceNameInput: document.getElementById('board-device-name-input'),
+  defaultChannelSelect: document.getElementById('board-default-channel-select'),
+  audioAlertsToggle: document.getElementById('board-audio-alerts-toggle'),
+  vibrationToggle: document.getElementById('board-vibration-toggle'),
+  autoJoinToggle: document.getElementById('board-auto-join-toggle'),
+  tapLockToggle: document.getElementById('board-tap-lock-toggle'),
+  saveSettings: document.getElementById('board-save-settings-btn'),
 };
 
 function loadSettings() {
@@ -204,6 +212,43 @@ async function initLobby() {
 function buildPresence() {
   return { ch: currentCh(), status: 'control', name: displayName(), speaking: false, lastSeen: Date.now() };
 }
+
+function populateChannelSelect() {
+  if (!els.defaultChannelSelect || els.defaultChannelSelect.options.length) return;
+  for (let i = 1; i <= 40; i++) {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = chLabel(i);
+    els.defaultChannelSelect.appendChild(opt);
+  }
+}
+function applySettingsToBoard() {
+  populateChannelSelect();
+  if (els.deviceNameInput) els.deviceNameInput.value = settings.deviceName || '';
+  if (els.defaultChannelSelect) els.defaultChannelSelect.value = String(currentCh());
+  if (els.audioAlertsToggle) els.audioAlertsToggle.checked = !!settings.audioAlerts;
+  if (els.vibrationToggle) els.vibrationToggle.checked = !!settings.vibration;
+  if (els.autoJoinToggle) els.autoJoinToggle.checked = !!settings.autoJoin;
+  if (els.tapLockToggle) els.tapLockToggle.checked = !!settings.tapLock;
+}
+function saveBoardSettings() {
+  settings.deviceName = (els.deviceNameInput?.value || '').trim();
+  settings.defaultChannel = Number(els.defaultChannelSelect?.value || settings.defaultChannel || 7);
+  settings.audioAlerts = !!els.audioAlertsToggle?.checked;
+  settings.vibration = !!els.vibrationToggle?.checked;
+  settings.autoJoin = !!els.autoJoinToggle?.checked;
+  settings.tapLock = !!els.tapLockToggle?.checked;
+  saveSettings();
+  try { if (sendPresence) sendPresence(buildPresence()); } catch {}
+  renderBoard();
+  toast('Settings saved');
+}
+function focusSettingsFromHash() {
+  if (location.hash === '#settings' && els.settingsCard) {
+    setTimeout(() => els.settingsCard.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+  }
+}
+
 function renderRooms() {
   els.rooms.innerHTML = ROOM_PRESETS.map(([name, ch]) => {
     const selected = ch === currentCh() ? ' selected' : '';
@@ -257,6 +302,7 @@ function renderBoard() {
   els.subtitle.textContent = displayName() + ' · ' + chLabel(currentCh());
   els.openTalk.href = joinLink();
   renderQr();
+  applySettingsToBoard();
   renderRooms();
   renderDevices();
   renderActivity();
@@ -340,6 +386,8 @@ els.clearInbox?.addEventListener('click', clearActivity);
 els.exportInbox?.addEventListener('click', exportActivity);
 els.copyLink?.addEventListener('click', copyJoinLink);
 els.copyLinkModal?.addEventListener('click', copyJoinLink);
+els.saveSettings?.addEventListener('click', saveBoardSettings);
+window.addEventListener('hashchange', focusSettingsFromHash);
 window.addEventListener('storage', renderActivity);
 window.addEventListener('beforeunload', () => {
   try { if (sendPresence) sendPresence({ ...buildPresence(), status: 'idle' }); } catch {}
@@ -351,3 +399,4 @@ if ('serviceWorker' in navigator) {
 renderQuickMessages();
 renderBoard();
 initLobby();
+focusSettingsFromHash();

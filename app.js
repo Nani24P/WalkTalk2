@@ -201,7 +201,7 @@ function applySettingsToUi() {
     vibrationToggle.checked = !!settings.vibration;
     autoJoinToggle.checked = !!settings.autoJoin;
     tapLockToggle.checked = !!settings.tapLock;
-    if (pttModeBtn) pttModeBtn.textContent = settings.tapLock ? 'MODE: TAP LOCK' : 'MODE: HOLD';
+    if (pttModeBtn) pttModeBtn.textContent = settings.tapLock ? 'TAP LOCK' : 'HOLD';
     if (pttLabel) pttLabel.textContent = tapLocked ? 'TAP TO STOP' : (settings.tapLock ? 'TAP TO TALK' : 'PUSH TO TALK');
     updateMuteUi();
 }
@@ -224,6 +224,16 @@ function toggleMute() {
     feedback(settings.muted ? 'AUDIO MUTED' : 'AUDIO LIVE');
     homeEvent('COMMS', settings.muted ? 'LOCAL AUDIO MUTED' : 'LOCAL AUDIO UNMUTED');
     if (!settings.muted) beep('message');
+}
+
+function toggleTapLockMode() {
+    settings.tapLock = !settings.tapLock;
+    tapLocked = false;
+    saveSettings();
+    applySettingsToUi();
+    feedback(settings.tapLock ? 'TAP LOCK MODE' : 'HOLD MODE');
+    homeEvent('MODE', settings.tapLock ? 'TAP TO TALK ENABLED' : 'HOLD TO TALK ENABLED');
+    beep('message');
 }
 
 // ── Strategy loader ───────────────────────────────────────────────────────
@@ -974,7 +984,7 @@ document.querySelectorAll('[data-close]').forEach(btn => {
     btn.addEventListener('click', () => closePanel(document.getElementById(btn.dataset.close)));
 });
 if (settingsBtn) settingsBtn.addEventListener('click', () => openPanel(settingsPanel));
-if (deviceChip) deviceChip.addEventListener('click', () => openPanel(settingsPanel));
+if (deviceChip) deviceChip.addEventListener('click', () => { window.location.href = 'control.html#settings'; });
 if (dashboardBtn) dashboardBtn.addEventListener('click', () => { ensureLobby(); openPanel(dashboardPanel); });
 if (chatBtn) chatBtn.addEventListener('click', () => openPanel(chatPanel));
 if (qrBtn) qrBtn.addEventListener('click', () => openPanel(qrPanel));
@@ -1276,3 +1286,5 @@ setTimeout(() => ensureLobby().catch(e => log('Auto lobby failed: ' + e.message,
 if (settings.autoJoin) {
     setTimeout(() => tuneIn().catch(e => log('Auto-join failed: ' + e.message, 'warn')), 1200);
 }
+
+if (pttModeBtn) pttModeBtn.addEventListener('click', toggleTapLockMode);

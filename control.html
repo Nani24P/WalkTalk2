@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="WalkTalk">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <title>WalkTalk Final v4.0 Board</title>
+    <title>WalkTalk Final v4.0 Board + Settings</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -40,6 +40,39 @@
                 <div class="stat-tile"><div class="stat-label">Room</div><div class="stat-value" id="board-room">CH --</div></div>
                 <div class="stat-tile"><div class="stat-label">Peers</div><div class="stat-value" id="board-peers">0</div></div>
                 <div class="stat-tile"><div class="stat-label">Link</div><div class="stat-value" id="board-mode">READY</div></div>
+            </div>
+        </section>
+
+        <section class="board-card board-settings-card" id="board-settings-card">
+            <div class="board-card-title">SETTINGS</div>
+            <div class="board-settings-grid">
+                <label class="setting-label board-setting-label">Device name</label>
+                <input class="setting-input board-setting-input" id="board-device-name-input" maxlength="28" placeholder="Living Room iPad">
+
+                <label class="setting-label board-setting-label">Default channel</label>
+                <select class="setting-input board-setting-input" id="board-default-channel-select"></select>
+
+                <div class="setting-toggle-row board-toggle-row">
+                    <span>Audio alerts</span>
+                    <input type="checkbox" id="board-audio-alerts-toggle">
+                </div>
+
+                <div class="setting-toggle-row board-toggle-row">
+                    <span>Vibration</span>
+                    <input type="checkbox" id="board-vibration-toggle">
+                </div>
+
+                <div class="setting-toggle-row board-toggle-row">
+                    <span>Auto-join last channel</span>
+                    <input type="checkbox" id="board-auto-join-toggle">
+                </div>
+
+                <div class="setting-toggle-row board-toggle-row">
+                    <span>Tap-to-lock PTT</span>
+                    <input type="checkbox" id="board-tap-lock-toggle">
+                </div>
+
+                <button class="board-btn" id="board-save-settings-btn" type="button">Save Settings</button>
             </div>
         </section>
 

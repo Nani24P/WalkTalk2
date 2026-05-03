@@ -1,4 +1,4 @@
-const CACHE_NAME = 'walktalk-final-v4-stable';
+const CACHE_NAME = 'walktalk-final-v4-settings-board';
 const APP_SHELL = [
   './',
   './index.html',
