@@ -1,12 +1,12 @@
 {
-  "name": "WalkTalk v2.5 Home Intercom",
+  "name": "WalkTalk v3 Arctic Signal",
   "short_name": "WalkTalk",
   "description": "Personal browser walkie-talkie, command board, and activity inbox for iPhone and iPad.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#07090d",
-  "theme_color": "#07090d",
+  "background_color": "#07111c",
+  "theme_color": "#07111c",
   "orientation": "portrait",
   "icons": [
     {
