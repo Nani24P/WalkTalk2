@@ -1,4 +1,4 @@
-// WalkTalk v2.5 — Command Board screen
+// WalkTalk v3 Arctic Signal — Command Board screen
 const STRATEGIES = [
   { name: 'nostr',   urls: ['https://esm.sh/trystero/nostr',   'https://cdn.skypack.dev/trystero/nostr']   },
   { name: 'mqtt',    urls: ['https://esm.sh/trystero/mqtt',    'https://cdn.skypack.dev/trystero/mqtt']    },
@@ -13,7 +13,7 @@ const DEFAULT_SETTINGS = { deviceName: '', defaultChannel: 7, audioAlerts: true,
 const ROOM_PRESETS = [
   ['Home', 7], ['Kitchen', 8], ['Bedroom', 9], ['Office', 10], ['Garage', 11], ['Upstairs', 12]
 ];
-const QUICK_MESSAGES = ['Come here', 'Dinner ready', 'Call me', 'Need help', 'Open the door', 'All good'];
+const QUICK_MESSAGES = ['Call me', 'Need help', 'Open the door', 'All good'];
 
 let settings = loadSettings();
 let peerMap = {};
@@ -41,6 +41,7 @@ const els = {
   alertAll: document.getElementById('alert-all-btn'),
   refresh: document.getElementById('refresh-board-btn'),
   clearInbox: document.getElementById('clear-inbox-btn'),
+  exportInbox: document.getElementById('export-inbox-btn'),
   openTalk: document.getElementById('open-talk-link'),
   joinTalk: document.getElementById('join-talk-btn'),
 };
@@ -276,7 +277,36 @@ function alertAll() {
 els.pingAll.addEventListener('click', pingAll);
 els.alertAll.addEventListener('click', alertAll);
 els.refresh.addEventListener('click', () => { renderBoard(); toast('Board refreshed'); });
-els.clearInbox.addEventListener('click', () => { localStorage.setItem(ACTIVITY_KEY, '[]'); renderActivity(); toast('Inbox cleared'); });
+function exportTextFile(filename, content) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 800);
+}
+function exportActivity() {
+  const activity = loadActivity().slice().reverse();
+  const lines = activity.map(item => {
+    const who = item.local ? 'You' : (item.from || 'Device');
+    const type = (item.type || 'event').toUpperCase();
+    const stamp = new Date(item.ts || Date.now()).toLocaleString();
+    return '[' + stamp + '] ' + type + ' · ' + who + ': ' + (item.text || '');
+  });
+  exportTextFile('walktalk-activity-' + new Date().toISOString().slice(0,10) + '.txt', lines.join('\n') || 'No activity.');
+  toast('Activity exported');
+}
+function clearActivity() {
+  if (!confirm('Clear Activity Inbox on this device?')) return;
+  localStorage.setItem(ACTIVITY_KEY, '[]');
+  renderActivity();
+  toast('Inbox cleared');
+}
+els.clearInbox.addEventListener('click', clearActivity);
+if (els.exportInbox) els.exportInbox.addEventListener('click', exportActivity);
 window.addEventListener('storage', renderActivity);
 window.addEventListener('beforeunload', () => { try { if (sendPresence) sendPresence({ ...buildPresence(), status: 'idle' }); } catch {} try { if (lobbyRoom) lobbyRoom.leave(); } catch {} });
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));

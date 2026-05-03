@@ -1,5 +1,5 @@
 // ╔══════════════════════════════════════════════════════════════════════════╗
-// ║  WALKIE / WalkTalk v2.5 — app.js                                          ║
+// ║  WALKIE / WalkTalk v3 Arctic Signal — app.js                                          ║
 // ║  Same simple web-app architecture, upgraded with device names,          ║
 // ║  dashboard, status messages, chat, pings, alerts, QR pairing, and PWA.  ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
@@ -27,6 +27,7 @@ const FREQ_STEP   = 0.025;
 const SETTINGS_KEY = 'walktalk-v2-settings';
 const CHAT_KEY     = 'walktalk-v2-chat';
 const ACTIVITY_KEY = 'walktalk-v2-activity';
+const MAX_CHAT_MESSAGES = 150;
 
 const DEFAULT_SETTINGS = {
     deviceName: '',
@@ -87,6 +88,11 @@ const attentionModal= document.getElementById('attention-modal');
 const attentionMsg  = document.getElementById('attention-msg');
 const dismissAttentionBtn = document.getElementById('dismiss-attention-btn');
 const offlineBanner = document.getElementById('offline-banner');
+const homeEventStrip = document.getElementById('home-event-strip');
+const homeEventKind = document.getElementById('home-event-kind');
+const homeEventMessage = document.getElementById('home-event-message');
+const clearChatBtn = document.getElementById('clear-chat-btn');
+const exportChatBtn = document.getElementById('export-chat-btn');
 
 // ── App state ─────────────────────────────────────────────────────────────
 let settings      = loadSettings();
@@ -129,14 +135,14 @@ function saveSettings() {
 function loadChat() {
     try {
         const saved = JSON.parse(localStorage.getItem(CHAT_KEY) || '[]');
-        return Array.isArray(saved) ? saved.slice(-80) : [];
+        return Array.isArray(saved) ? saved.slice(-MAX_CHAT_MESSAGES) : [];
     } catch (e) {
         return [];
     }
 }
 
 function saveChat() {
-    localStorage.setItem(CHAT_KEY, JSON.stringify(chatMessages.slice(-80)));
+    localStorage.setItem(CHAT_KEY, JSON.stringify(chatMessages.slice(-MAX_CHAT_MESSAGES)));
 }
 
 function recordActivity(item) {
@@ -232,6 +238,17 @@ function setState(name) {
 }
 function feedback(msg) {
     feedbackEl.textContent = msg;
+}
+function homeEvent(kind, msg) {
+    if (!homeEventStrip || !homeEventKind || !homeEventMessage) return;
+    homeEventKind.textContent = String(kind || 'COMMS').toUpperCase();
+    homeEventMessage.textContent = String(msg || 'NO NEW SIGNALS').toUpperCase();
+    homeEventStrip.classList.remove('event-ping', 'event-message-type', 'event-alert', 'event-status');
+    const normalized = String(kind || '').toLowerCase();
+    if (normalized.includes('ping')) homeEventStrip.classList.add('event-ping');
+    else if (normalized.includes('alert')) homeEventStrip.classList.add('event-alert');
+    else if (normalized.includes('msg') || normalized.includes('chat')) homeEventStrip.classList.add('event-message-type');
+    else homeEventStrip.classList.add('event-status');
 }
 function vibrate(pattern) {
     if (settings.vibration && navigator.vibrate) navigator.vibrate(pattern);
@@ -384,6 +401,7 @@ async function initLobby(strategy) {
         const sender = data && data.name ? data.name : peerName(peerId);
         addChatMessage({ type: 'ping', from: sender, text: 'Pinged this device', ts: Date.now(), local: false });
         feedback('PING FROM ' + sender.toUpperCase());
+        homeEvent('PING', 'FROM ' + sender + ' · DEVICE PING');
         beep('ping');
         vibrate([80, 50, 80]);
     });
@@ -392,12 +410,14 @@ async function initLobby(strategy) {
         const sender = data && data.name ? data.name : peerName(peerId);
         addChatMessage({ type: 'status', from: sender, text: data.text, ts: Date.now(), local: false });
         feedback(sender.toUpperCase() + ': ' + String(data.text || '').toUpperCase());
+        homeEvent('STATUS', sender + ': ' + String(data.text || ''));
         beep('message');
     });
 
     getLobbyEmergency((data, peerId) => {
         const sender = data && data.name ? data.name : peerName(peerId);
         showAttention(sender, data && data.text ? data.text : 'Emergency attention requested');
+        homeEvent('ALERT', 'FROM ' + sender + ' · ATTENTION REQUEST');
     });
 
     lobbyRoom.onPeerLeave(peerId => {
@@ -625,6 +645,7 @@ function setupChannelActions() {
         const sender = data && data.name ? data.name : peerName(peerId);
         addChatMessage({ type: 'chat', from: sender, text: data.text, ts: Date.now(), local: false });
         feedback('MSG FROM ' + sender.toUpperCase() + ': ' + shortForFeedback(data && data.text).toUpperCase());
+        homeEvent('MESSAGE', sender + ': ' + String(data && data.text ? data.text : ''));
         beep('message');
     });
 
@@ -632,6 +653,7 @@ function setupChannelActions() {
         const sender = data && data.name ? data.name : peerName(peerId);
         addChatMessage({ type: 'status', from: sender, text: data.text, ts: Date.now(), local: false });
         feedback(sender.toUpperCase() + ': ' + String(data.text || '').toUpperCase());
+        homeEvent('STATUS', sender + ': ' + String(data.text || ''));
         beep('message');
     });
 
@@ -639,6 +661,7 @@ function setupChannelActions() {
         const sender = data && data.name ? data.name : peerName(peerId);
         addChatMessage({ type: 'ping', from: sender, text: 'Pinged this room', ts: Date.now(), local: false });
         feedback('PING FROM ' + sender.toUpperCase());
+        homeEvent('PING', 'FROM ' + sender + ' · ROOM PING');
         beep('ping');
         vibrate([80, 50, 80]);
     });
@@ -809,50 +832,82 @@ function updateSpeakingPresence(isSpeaking) {
 
 function startTX() {
     if (!localStream || pttBtn.disabled) return;
+    const track = localStream.getAudioTracks()[0];
+    if (!track) return;
+    if (document.body.classList.contains('state-tx')) {
+        pttLabel.textContent = settings.tapLock ? 'LOCKED TX' : 'TRANSMITTING';
+        return;
+    }
     vibrate(50);
-    localStream.getAudioTracks()[0].enabled = true;
+    track.enabled = true;
     setState('tx');
-    feedback('TRANSMITTING…');
+    feedback(settings.tapLock ? 'LOCKED TX' : 'TRANSMITTING…');
+    homeEvent('COMMS', settings.tapLock ? 'LOCKED TRANSMISSION ACTIVE' : 'LIVE TRANSMISSION ACTIVE');
     pttBtn.classList.add('tx-locked');
-    pttLabel.textContent = settings.tapLock ? 'TAP TO STOP' : 'TRANSMITTING';
+    pttLabel.textContent = settings.tapLock ? 'TAP TO RELEASE' : 'TRANSMITTING';
     updateSpeakingPresence(true);
     beep('txStart');
 }
 function stopTX(silent = false) {
-    if (!localStream) return;
-    localStream.getAudioTracks()[0].enabled = false;
+    const wasTx = document.body.classList.contains('state-tx') || tapLocked;
+    if (localStream) {
+        const track = localStream.getAudioTracks()[0];
+        if (track) track.enabled = false;
+    }
     tapLocked = false;
     pttBtn.classList.remove('tx-locked');
     setState(channelRoom ? 'connected' : 'idle');
-    feedback(channelRoom ? 'STANDBY' : 'STANDBY');
+    feedback('STANDBY');
+    homeEvent('COMMS', channelRoom ? 'STANDBY · CHANNEL OPEN' : 'NO ACTIVE CHANNEL');
     pttLabel.textContent = settings.tapLock ? 'TAP TO TALK' : 'PUSH TO TALK';
     updateSpeakingPresence(false);
-    if (!silent) beep('txEnd');
+    if (!silent && wasTx) beep('txEnd');
 }
 function toggleTapTx() {
-    if (tapLocked) stopTX();
+    if (tapLocked || document.body.classList.contains('state-tx')) stopTX();
     else { tapLocked = true; startTX(); }
 }
 
-pttBtn.addEventListener('touchstart', e => {
+let pttPointerActive = false;
+let pttPointerId = null;
+let lastTapToggleAt = 0;
+
+pttBtn.addEventListener('pointerdown', e => {
     e.preventDefault();
-    if (settings.tapLock) return;
-    startTX();
+    unlockAudio();
+    if (pttBtn.disabled) return;
+    pttPointerActive = true;
+    pttPointerId = e.pointerId;
+    try { pttBtn.setPointerCapture(e.pointerId); } catch (err) {}
+    if (!settings.tapLock) startTX();
 }, { passive: false });
-pttBtn.addEventListener('touchend', e => {
+pttBtn.addEventListener('pointerup', e => {
     e.preventDefault();
-    if (settings.tapLock) return;
-    stopTX();
+    if (pttBtn.disabled) return;
+    try { pttBtn.releasePointerCapture(e.pointerId); } catch (err) {}
+    pttPointerActive = false;
+    pttPointerId = null;
+    if (settings.tapLock) {
+        const now = Date.now();
+        if (now - lastTapToggleAt > 260) {
+            lastTapToggleAt = now;
+            toggleTapTx();
+        }
+    } else {
+        stopTX();
+    }
 }, { passive: false });
-pttBtn.addEventListener('touchcancel', e => {
+pttBtn.addEventListener('pointercancel', e => {
     e.preventDefault();
-    if (settings.tapLock) return;
-    stopTX();
+    pttPointerActive = false;
+    pttPointerId = null;
+    if (!settings.tapLock) stopTX();
 }, { passive: false });
-pttBtn.addEventListener('mousedown', () => { if (!settings.tapLock) startTX(); });
-pttBtn.addEventListener('mouseup', () => { if (!settings.tapLock) stopTX(); });
-pttBtn.addEventListener('mouseleave', () => { if (!settings.tapLock) stopTX(); });
-pttBtn.addEventListener('click', () => { if (settings.tapLock) toggleTapTx(); });
+pttBtn.addEventListener('lostpointercapture', () => {
+    if (pttPointerActive && !settings.tapLock) stopTX();
+    pttPointerActive = false;
+    pttPointerId = null;
+});
 
 pttModeBtn.addEventListener('click', () => {
     settings.tapLock = !settings.tapLock;
@@ -943,7 +998,7 @@ function sendPingToPeer(peerId) {
 function addChatMessage(message) {
     const normalized = { ...message, ts: message.ts || Date.now() };
     chatMessages.push(normalized);
-    chatMessages = chatMessages.slice(-80);
+    chatMessages = chatMessages.slice(-MAX_CHAT_MESSAGES);
     saveChat();
     recordActivity(normalized);
     if (!normalized.local && chatPanel && chatPanel.classList.contains('hidden')) {
@@ -992,6 +1047,7 @@ function sendRoomChat() {
         addChatMessage({ type: 'chat', from: displayName(), text, ts: Date.now(), local: true });
         chatInput.value = '';
         feedback('SENT: ' + shortForFeedback(text).toUpperCase());
+        homeEvent('MESSAGE', 'YOU: ' + text);
         beep('message');
     } catch (e) {
         log('Chat send failed: ' + e.message, 'warn');
@@ -1007,6 +1063,7 @@ function sendQuickStatus(text) {
         if (sendLobbyStatus) sendLobbyStatus(payload);
         addChatMessage({ type: 'status', from: displayName(), text, ts: Date.now(), local: true });
         feedback('STATUS SENT: ' + text.toUpperCase());
+        homeEvent('STATUS', 'YOU: ' + text);
         beep('message');
     } catch (e) {
         log('Status send failed: ' + e.message, 'warn');
@@ -1015,12 +1072,72 @@ function sendQuickStatus(text) {
     }
 }
 
+function exportTextFile(filename, content) {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 800);
+}
+function exportChatMessages() {
+    const lines = chatMessages.map(msg => {
+        const who = msg.local ? 'You' : (msg.from || 'Device');
+        const type = (msg.type || 'chat').toUpperCase();
+        const stamp = new Date(msg.ts || Date.now()).toLocaleString();
+        return '[' + stamp + '] ' + type + ' · ' + who + ': ' + (msg.text || '');
+    });
+    exportTextFile('walktalk-chat-' + new Date().toISOString().slice(0,10) + '.txt', lines.join('\n') || 'No chat messages.');
+    feedback('CHAT EXPORTED');
+    homeEvent('CHAT', 'CHAT EXPORTED');
+}
+function clearChatMessages() {
+    if (!confirm('Clear chat messages on this device?')) return;
+    chatMessages = [];
+    unreadChatCount = 0;
+    saveChat();
+    updateChatBadge();
+    renderChat();
+    feedback('CHAT CLEARED');
+    homeEvent('CHAT', 'LOCAL CHAT CLEARED');
+}
+if (clearChatBtn) clearChatBtn.addEventListener('click', clearChatMessages);
+if (exportChatBtn) exportChatBtn.addEventListener('click', exportChatMessages);
+
 sendChatBtn.addEventListener('click', sendRoomChat);
 chatInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') sendRoomChat();
 });
+function sendPingAll() {
+    const payload = { name: displayName(), ts: Date.now() };
+    let sent = false;
+    try {
+        if (sendPing) { sendPing(payload); sent = true; }
+        if (sendLobbyPing) { sendLobbyPing(payload); sent = true; }
+        addChatMessage({ type: 'ping', from: displayName(), text: 'Ping sent to all devices', ts: Date.now(), local: true });
+        feedback(sent ? 'PING ALL SENT' : 'PING READY AFTER CONNECT');
+        homeEvent('PING', sent ? 'PING SENT TO ALL DEVICES' : 'PING READY AFTER CONNECT');
+        beep('ping');
+    } catch (e) {
+        log('Ping all failed: ' + e.message, 'warn');
+        feedback('PING FAILED');
+        homeEvent('PING', 'PING FAILED');
+        beep('error');
+    }
+}
+
 document.querySelectorAll('.status-pill').forEach(btn => {
-    btn.addEventListener('click', () => sendQuickStatus(btn.dataset.status));
+    btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        if (action === 'ping') sendPingAll();
+        else if (action === 'alert') sendEmergencyAlert();
+        else if (action === 'chat') openPanel(chatPanel);
+        else if (action === 'device') { ensureLobby(); openPanel(dashboardPanel); }
+        else if (btn.dataset.status) sendQuickStatus(btn.dataset.status);
+    });
 });
 
 function sendEmergencyAlert() {
@@ -1031,6 +1148,7 @@ function sendEmergencyAlert() {
         if (sendLobbyEmergency) { sendLobbyEmergency(payload); sent = true; }
         addChatMessage({ type: 'alert', from: displayName(), text: 'Emergency alert sent', ts: Date.now(), local: true });
         feedback(sent ? 'ALERT SENT' : 'ALERT READY AFTER CONNECT');
+        homeEvent('ALERT', sent ? 'ATTENTION ALERT SENT' : 'ALERT READY AFTER CONNECT');
         beep('emergency');
         vibrate([120, 80, 120, 80, 180]);
     } catch (e) {
@@ -1045,6 +1163,7 @@ function showAttention(sender, text) {
     attentionModal.classList.remove('hidden');
     addChatMessage({ type: 'alert', from: sender, text, ts: Date.now(), local: false });
     feedback('ATTENTION ALERT');
+    homeEvent('ALERT', 'FROM ' + sender + ': ' + text);
     beep('emergency');
     vibrate([150, 100, 150, 100, 250]);
 }
@@ -1124,6 +1243,7 @@ updateChatBadge();
 renderDashboard();
 updateOfflineBanner();
 updateQr();
+homeEvent('COMMS', 'ARCTIC SIGNAL READY');
 log('Tuner ready · ' + TOTAL_CH + ' channels ✓', 'ok');
 
 // Join lobby shortly after load so dashboard/status/ping sees nearby devices.

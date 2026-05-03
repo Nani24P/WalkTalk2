@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#07090d">
+    <meta name="theme-color" content="#07111c">
     <meta name="description" content="WALKIE — Browser push-to-talk. Tune to a frequency. Talk.">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WalkTalk">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <title>WALKIE · v2.5</title>
+    <title>WALKIE · v3 Arctic Signal</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,14 +49,14 @@
     <button class="mini-btn" id="dashboard-btn" type="button">DEVICES</button>
     <button class="mini-btn" id="chat-btn" type="button">CHAT</button>
     <button class="mini-btn" id="qr-btn" type="button">QR</button>
-    <button class="mini-btn" id="settings-btn" type="button">⚙</button>
+    <button class="mini-btn icon-btn settings-icon-btn" id="settings-btn" type="button" aria-label="Settings">☷</button>
 </div>
 
 <section id="tuner-panel" class="tuner-panel">
     <div class="tuner-header">
-        <span class="panel-label">▸ FREQUENCY TUNER</span>
+        <span class="panel-label">▸ ARCTIC SIGNAL TUNER</span>
         <div class="squelch-row">
-            <span class="sq-label">SQL</span>
+            <span class="sq-label">COMMS</span>
             <div class="squelch-led" id="squelch-led"></div>
         </div>
     </div>
@@ -67,7 +67,7 @@
             <span class="tuner-freq" id="tuner-freq">462.6875</span>
             <span class="tuner-unit">MHz</span>
         </div>
-        <div class="tuner-band">VHF · FRS / GMRS · 40 CHANNELS</div>
+        <div class="tuner-band">ARCTIC BAND · FIELD COMMS · 40 CHANNELS</div>
     </div>
 
     <div class="tape-wrapper" id="tape-wrapper">
@@ -81,6 +81,10 @@
         <button class="step-btn" id="ch-up">CH ▸</button>
     </div>
 </section>
+<div id="home-event-strip" class="home-event-strip" aria-live="polite">
+    <div class="event-kicker" id="home-event-kind">COMMS</div>
+    <div class="event-message" id="home-event-message">NO NEW SIGNALS</div>
+</div>
 
 <div id="locked-badge" class="locked-badge scanning hidden">
     <div class="locked-icon">
@@ -133,11 +137,11 @@
         <button class="mini-btn emergency-btn" id="emergency-btn" type="button">⚠ ALERT</button>
     </div>
 
-    <div class="quick-status-row" id="quick-status-row">
-        <button class="status-pill" data-status="Come here">Come here</button>
-        <button class="status-pill" data-status="Dinner ready">Dinner ready</button>
-        <button class="status-pill" data-status="Call me">Call me</button>
-        <button class="status-pill" data-status="Need help">Need help</button>
+    <div class="quick-status-row tactical-actions" id="quick-status-row">
+        <button class="status-pill action-ping" data-action="ping">PING</button>
+        <button class="status-pill action-alert" data-action="alert">ALERT</button>
+        <button class="status-pill action-chat" data-action="chat">CHAT</button>
+        <button class="status-pill action-device" data-action="device">DEVICE</button>
     </div>
 
     <div class="meta-row">
@@ -203,7 +207,7 @@
         </div>
         <div class="setting-toggle-row debug-setting-row">
             <span>Debug tools</span>
-            <button id="debug-toggle" class="mini-btn debug-settings-btn" type="button">⌥ DEBUG</button>
+            <button id="debug-toggle" class="mini-btn debug-settings-btn icon-btn" type="button" aria-label="Debug tools">🐞</button>
         </div>
         <div id="debug-panel" class="hidden settings-debug-panel">
             <div id="debug-log"></div>
@@ -235,6 +239,10 @@
                 <div class="panel-subtitle">Room messages and status notes</div>
             </div>
             <button class="panel-close" data-close="chat-panel">✕</button>
+        </div>
+        <div class="chat-tools-row">
+            <button class="mini-btn" id="export-chat-btn" type="button">EXPORT</button>
+            <button class="mini-btn danger-mini" id="clear-chat-btn" type="button">CLEAR</button>
         </div>
         <div class="chat-log" id="chat-log"></div>
         <div class="chat-input-row">

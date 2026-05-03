@@ -1037,3 +1037,189 @@ body {
     .status-pill { min-height: 38px; }
     .meta-row { max-width: 250px; }
 }
+
+/* ── WalkTalk v3: Arctic Signal Command Update ─────────────────────────── */
+:root {
+    --bg:          #07111c;
+    --surface:     rgba(10, 24, 38, 0.92);
+    --surface2:    rgba(15, 35, 54, 0.88);
+    --border:      rgba(147, 211, 255, 0.13);
+    --idle-text:   #5f7890;
+    --idle-glow:   rgba(90, 166, 214, 0.05);
+    --con-primary: #8fd9ff;
+    --con-dim:     #5fa8c9;
+    --con-glow:    rgba(83, 174, 232, 0.13);
+    --con-ring:    rgba(143, 217, 255, 0.22);
+    --tx-primary:  #ffb86b;
+    --tx-dim:      #d5914d;
+    --tx-glow:     rgba(255, 184, 107, 0.17);
+    --tx-ring:     rgba(255, 184, 107, 0.28);
+    --dis-primary: #ff6d6d;
+}
+html { background: #07111c; }
+body {
+    color: #d9ecf8;
+    background:
+        radial-gradient(circle at 18% 8%, rgba(89, 167, 221, 0.16), transparent 28%),
+        radial-gradient(circle at 82% 14%, rgba(143, 217, 255, 0.10), transparent 30%),
+        linear-gradient(160deg, #08131f 0%, #0a1624 44%, #04080f 100%);
+}
+.bg-grid {
+    background-image:
+        linear-gradient(rgba(143,217,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(143,217,255,0.035) 1px, transparent 1px),
+        linear-gradient(45deg, rgba(255,255,255,0.018) 25%, transparent 25%);
+    background-size: 34px 34px, 34px 34px, 160px 160px;
+}
+.bg-glow {
+    background:
+        radial-gradient(ellipse 70% 52% at 50% 48%, var(--active-glow), transparent 72%),
+        radial-gradient(ellipse 90% 40% at 50% 100%, rgba(143,217,255,0.08), transparent 70%);
+}
+.logo-mark { color: var(--con-primary); text-shadow: 0 0 12px rgba(143,217,255,0.65); }
+.logo-text { color: #eaf7ff; text-shadow: 0 0 24px rgba(143,217,255,0.18); }
+.status-dot { background: #162d42; }
+body.state-connected .status-dot { background: var(--con-primary); box-shadow:0 0 12px rgba(143,217,255,0.8),0 0 30px rgba(95,168,201,0.34); }
+body.state-tx .status-dot { background: var(--tx-primary); box-shadow:0 0 14px rgba(255,184,107,0.95),0 0 30px rgba(255,184,107,0.35); }
+.tuner-panel {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(143,217,255,0.22);
+    background:
+        linear-gradient(180deg, rgba(18,42,61,0.92), rgba(8,19,31,0.92)),
+        repeating-linear-gradient(90deg, rgba(143,217,255,0.035) 0 1px, transparent 1px 18px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 18px 46px rgba(0,0,0,0.30), 0 0 0 1px rgba(143,217,255,0.04);
+}
+.tuner-panel::before {
+    content: 'FIELD RADIO / SECURE LOCAL COMMS';
+    position: absolute;
+    right: 14px;
+    bottom: 8px;
+    color: rgba(143,217,255,0.10);
+    font-family: var(--font-display);
+    font-size: 0.45rem;
+    letter-spacing: 2.2px;
+    pointer-events: none;
+}
+.panel-label { color: #7fbdda; }
+.sq-label { color: #6e879b; }
+.squelch-led.open { background: var(--con-primary); box-shadow: 0 0 10px rgba(143,217,255,0.78); }
+.tuner-ch-label { color: #7fc5e8; }
+.tuner-freq { color: #d9f3ff; text-shadow: 0 0 20px rgba(143,217,255,0.45), 0 0 52px rgba(95,168,201,0.20); }
+.tuner-unit { color: #7fbdda; }
+.tuner-band { color: rgba(190,226,246,0.34); }
+.tape-wrapper {
+    background: linear-gradient(180deg, rgba(6,15,25,0.98), rgba(13,30,46,0.95));
+    border-color: rgba(143,217,255,0.16);
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.34);
+}
+.tape-wrapper::before { background:linear-gradient(to right, rgba(6,15,25,0.98), transparent); }
+.tape-wrapper::after { background:linear-gradient(to left, rgba(6,15,25,0.98), transparent); }
+.tape-needle { background: #c7efff; box-shadow:0 0 10px rgba(143,217,255,0.95),0 0 26px rgba(143,217,255,0.36); }
+.tape-needle::after { color:#c7efff; text-shadow:0 0 8px rgba(143,217,255,0.95); }
+.tick-badge { background:rgba(143,217,255,0.14); color:#bfeeff; }
+.tick-badge.busy { background:rgba(255,184,107,0.20); color:var(--tx-primary); }
+.ch-tick.near-one .tick-bar { background:rgba(143,217,255,0.32); }
+.ch-tick.near-two .tick-bar { background:rgba(143,217,255,0.18); }
+.ch-tick.heat-low .tick-bar { background:rgba(143,217,255,0.45); }
+.ch-tick.active .tick-num { color:#e1f6ff; }
+.ch-tick.active .tick-bar { background:#c7efff !important; box-shadow:0 0 10px rgba(143,217,255,0.85),0 0 24px rgba(143,217,255,0.32) !important; }
+.step-btn, .tune-btn, .mini-btn, .mini-chip, .status-pill, .board-btn {
+    background: rgba(13, 31, 48, 0.80);
+    border-color: rgba(143,217,255,0.14);
+    color: #a9c8dd;
+}
+.step-btn:hover, .mini-btn:hover, .mini-chip:hover, .status-pill:hover, .board-btn:hover, .board-btn:active {
+    color: #d9f3ff;
+    border-color: rgba(143,217,255,0.45);
+    box-shadow: 0 0 18px rgba(143,217,255,0.10);
+}
+.tune-btn { color: #d9f3ff; border-color: rgba(143,217,255,0.32); }
+body.state-connected .tune-btn { background: rgba(143,217,255,0.12); color:#ecfbff; }
+.feedback { color: #a7c7dd; text-shadow: 0 0 14px rgba(143,217,255,0.16); }
+.home-event-strip {
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0 8px;
+    padding: 9px 11px;
+    min-height: 42px;
+    border: 1px solid rgba(143,217,255,0.18);
+    border-radius: 14px;
+    background: linear-gradient(90deg, rgba(15,35,54,0.82), rgba(8,20,32,0.88));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 12px 28px rgba(0,0,0,0.14);
+}
+.event-kicker {
+    font-family: var(--font-display);
+    color: #7fc5e8;
+    font-size: 0.54rem;
+    letter-spacing: 2px;
+    border-right: 1px solid rgba(143,217,255,0.18);
+    padding-right: 10px;
+}
+.event-message {
+    color: #e7f7ff;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 1.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.home-event-strip.event-ping { border-color: rgba(143,217,255,0.36); }
+.home-event-strip.event-alert { border-color: rgba(255,109,109,0.55); box-shadow: 0 0 20px rgba(255,109,109,0.10); }
+.home-event-strip.event-alert .event-kicker { color: #ff9a9a; }
+.home-event-strip.event-message-type .event-kicker { color: #b8dfff; }
+.tactical-actions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-width: 360px;
+}
+.tactical-actions .status-pill {
+    border-radius: 14px;
+    min-height: 48px;
+    font-family: var(--font-display);
+    font-size: 0.54rem;
+    letter-spacing: 1.6px;
+}
+.action-alert, .danger-mini { color: #ff9a9a !important; border-color: rgba(255,109,109,0.34) !important; }
+.action-ping { color: #d9f3ff !important; }
+.icon-btn { min-width: 40px; padding-left: 10px; padding-right: 10px; text-align: center; }
+.settings-icon-btn { font-size: 0.9rem; }
+.debug-settings-btn { min-width: 44px; }
+.chat-tools-row, .card-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+    margin: -4px 0 10px;
+}
+.chat-tools-row .mini-btn { min-width: 74px; border-radius: 10px; }
+.chat-message.local { border-color: rgba(143,217,255,0.22); background: rgba(143,217,255,0.055); }
+.chat-message.incoming { border-color: rgba(255,184,107,0.22); background: rgba(255,184,107,0.04); }
+.chat-head { color: #7fc5e8; }
+.chat-text { color: #e5f3fb; }
+.control-kicker, .control-title, .board-toast { color: #bfeeff; }
+.control-title { text-shadow: 0 0 22px rgba(143,217,255,0.18); }
+.board-card {
+    background: linear-gradient(180deg, rgba(13,31,48,0.90), rgba(7,17,28,0.92));
+    border-color: rgba(143,217,255,0.16);
+}
+.command-hero-card { border-color: rgba(143,217,255,0.24); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 0 34px rgba(143,217,255,0.055); }
+.board-card-title { color: #b8dfff; }
+.stat-value, .device-name { color: #e9f8ff; }
+.activity-text { color: #d7edf9; }
+@media (max-width: 430px) {
+    .home-event-strip { margin-top: 8px; min-height: 40px; padding: 8px 10px; }
+    .event-message { font-size: 0.61rem; }
+    .tactical-actions { gap: 7px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .tactical-actions .status-pill { min-height: 42px; font-size: 0.48rem; padding: 8px 4px; }
+    .tuner-freq { font-size: 2.35rem; }
+    .tuner-panel { padding: 15px 14px 13px; gap: 11px; }
+}
+@media (max-width: 370px) {
+    .tactical-actions .status-pill { font-size: 0.44rem; letter-spacing: 1px; }
+    .event-kicker { display:none; }
+    .home-event-strip { grid-template-columns: 1fr; }
+}
