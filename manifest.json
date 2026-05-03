@@ -1,7 +1,7 @@
 {
-  "name": "WalkTalk v3 Arctic Signal",
+  "name": "WalkTalk v3.1 Clean Command",
   "short_name": "WalkTalk",
-  "description": "Personal browser walkie-talkie, command board, and activity inbox for iPhone and iPad.",
+  "description": "Personal browser walkie-talkie with a clean home screen, command board, and activity inbox for iPhone and iPad.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

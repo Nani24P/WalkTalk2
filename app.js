@@ -1,5 +1,5 @@
 // ╔══════════════════════════════════════════════════════════════════════════╗
-// ║  WALKIE / WalkTalk v3 Arctic Signal — app.js                                          ║
+// ║  WALKIE / WalkTalk v3.1 Clean Command — app.js                            ║
 // ║  Same simple web-app architecture, upgraded with device names,          ║
 // ║  dashboard, status messages, chat, pings, alerts, QR pairing, and PWA.  ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
@@ -36,6 +36,7 @@ const DEFAULT_SETTINGS = {
     vibration: true,
     autoJoin: false,
     tapLock: false,
+    muted: false,
 };
 
 // ── DOM references ────────────────────────────────────────────────────────
@@ -43,6 +44,7 @@ const pttBtn        = document.getElementById('ptt-button');
 const pttLabel      = document.getElementById('ptt-label');
 const pttModeBtn    = document.getElementById('ptt-mode-btn');
 const emergencyBtn  = document.getElementById('emergency-btn');
+const muteBtn       = document.getElementById('mute-btn');
 const feedbackEl    = document.getElementById('feedback-display');
 const peerIdDisplay = document.getElementById('peer-id-display');
 const tunerPanel    = document.getElementById('tuner-panel');
@@ -192,15 +194,36 @@ function buildPresence(status) {
 }
 
 function applySettingsToUi() {
-    deviceChip.textContent = displayName().toUpperCase();
+    if (deviceChip) deviceChip.textContent = displayName().toUpperCase();
     deviceNameInput.value = settings.deviceName || '';
     defaultChannelSelect.value = String(settings.defaultChannel || currentCh);
     audioAlertsToggle.checked = !!settings.audioAlerts;
     vibrationToggle.checked = !!settings.vibration;
     autoJoinToggle.checked = !!settings.autoJoin;
     tapLockToggle.checked = !!settings.tapLock;
-    pttModeBtn.textContent = settings.tapLock ? 'MODE: TAP LOCK' : 'MODE: HOLD';
-    pttLabel.textContent = tapLocked ? 'TAP TO STOP' : (settings.tapLock ? 'TAP TO TALK' : 'PUSH TO TALK');
+    if (pttModeBtn) pttModeBtn.textContent = settings.tapLock ? 'MODE: TAP LOCK' : 'MODE: HOLD';
+    if (pttLabel) pttLabel.textContent = tapLocked ? 'TAP TO STOP' : (settings.tapLock ? 'TAP TO TALK' : 'PUSH TO TALK');
+    updateMuteUi();
+}
+
+function updateMuteUi() {
+    const muted = !!settings.muted;
+    document.body.classList.toggle('is-muted', muted);
+    if (muteBtn) {
+        muteBtn.textContent = muted ? 'UNMUTE' : 'MUTE';
+        muteBtn.classList.toggle('muted-on', muted);
+    }
+    const audio = document.getElementById('remote-audio');
+    if (audio) audio.muted = muted;
+}
+
+function toggleMute() {
+    settings.muted = !settings.muted;
+    saveSettings();
+    updateMuteUi();
+    feedback(settings.muted ? 'AUDIO MUTED' : 'AUDIO LIVE');
+    homeEvent('COMMS', settings.muted ? 'LOCAL AUDIO MUTED' : 'LOCAL AUDIO UNMUTED');
+    if (!settings.muted) beep('message');
 }
 
 // ── Strategy loader ───────────────────────────────────────────────────────
@@ -233,7 +256,8 @@ function chLabel(ch) {
     return 'CHANNEL ' + String(ch).padStart(2, '0');
 }
 function setState(name) {
-    document.body.className = 'state-' + name;
+    document.body.classList.remove('state-idle', 'state-connected', 'state-tx');
+    document.body.classList.add('state-' + name);
     log('State → ' + name);
 }
 function feedback(msg) {
@@ -273,7 +297,7 @@ function unlockAudio() {
 }
 
 function beep(kind) {
-    if (!settings.audioAlerts) return;
+    if (!settings.audioAlerts || settings.muted) return;
     unlockAudio();
     if (!audioCtx) return;
 
@@ -464,6 +488,7 @@ function playStream(stream) {
         document.body.appendChild(audio);
     }
     audio.srcObject = stream;
+    audio.muted = !!settings.muted;
     audio.play().catch(e => log('Audio play: ' + e.message, 'warn'));
     log('Remote audio playing ✓', 'ok');
 }
@@ -909,7 +934,7 @@ pttBtn.addEventListener('lostpointercapture', () => {
     pttPointerId = null;
 });
 
-pttModeBtn.addEventListener('click', () => {
+if (pttModeBtn) pttModeBtn.addEventListener('click', () => {
     settings.tapLock = !settings.tapLock;
     tapLockToggle.checked = settings.tapLock;
     saveSettings();
@@ -948,11 +973,11 @@ function closePanel(panel) {
 document.querySelectorAll('[data-close]').forEach(btn => {
     btn.addEventListener('click', () => closePanel(document.getElementById(btn.dataset.close)));
 });
-settingsBtn.addEventListener('click', () => openPanel(settingsPanel));
-deviceChip.addEventListener('click', () => openPanel(settingsPanel));
-dashboardBtn.addEventListener('click', () => { ensureLobby(); openPanel(dashboardPanel); });
-chatBtn.addEventListener('click', () => openPanel(chatPanel));
-qrBtn.addEventListener('click', () => openPanel(qrPanel));
+if (settingsBtn) settingsBtn.addEventListener('click', () => openPanel(settingsPanel));
+if (deviceChip) deviceChip.addEventListener('click', () => openPanel(settingsPanel));
+if (dashboardBtn) dashboardBtn.addEventListener('click', () => { ensureLobby(); openPanel(dashboardPanel); });
+if (chatBtn) chatBtn.addEventListener('click', () => openPanel(chatPanel));
+if (qrBtn) qrBtn.addEventListener('click', () => openPanel(qrPanel));
 
 function renderDashboard() {
     if (!deviceList) return;
@@ -1133,9 +1158,8 @@ document.querySelectorAll('.status-pill').forEach(btn => {
     btn.addEventListener('click', () => {
         const action = btn.dataset.action;
         if (action === 'ping') sendPingAll();
-        else if (action === 'alert') sendEmergencyAlert();
         else if (action === 'chat') openPanel(chatPanel);
-        else if (action === 'device') { ensureLobby(); openPanel(dashboardPanel); }
+        else if (action === 'mute') toggleMute();
         else if (btn.dataset.status) sendQuickStatus(btn.dataset.status);
     });
 });
@@ -1168,7 +1192,7 @@ function showAttention(sender, text) {
     vibrate([150, 100, 150, 100, 250]);
 }
 
-emergencyBtn.addEventListener('click', sendEmergencyAlert);
+if (emergencyBtn) emergencyBtn.addEventListener('click', sendEmergencyAlert);
 dismissAttentionBtn.addEventListener('click', () => attentionModal.classList.add('hidden'));
 
 // ── QR pairing ────────────────────────────────────────────────────────────
@@ -1185,7 +1209,7 @@ function updateQr() {
     qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=' + encodeURIComponent(link);
 }
 
-copyLinkBtn.addEventListener('click', async () => {
+if (copyLinkBtn) copyLinkBtn.addEventListener('click', async () => {
     const link = joinLink();
     try {
         await navigator.clipboard.writeText(link);

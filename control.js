@@ -1,4 +1,4 @@
-// WalkTalk v3 Arctic Signal — Command Board screen
+// WalkTalk v3.1 Clean Command — Command Board screen
 const STRATEGIES = [
   { name: 'nostr',   urls: ['https://esm.sh/trystero/nostr',   'https://cdn.skypack.dev/trystero/nostr']   },
   { name: 'mqtt',    urls: ['https://esm.sh/trystero/mqtt',    'https://cdn.skypack.dev/trystero/mqtt']    },
@@ -43,7 +43,9 @@ const els = {
   clearInbox: document.getElementById('clear-inbox-btn'),
   exportInbox: document.getElementById('export-inbox-btn'),
   openTalk: document.getElementById('open-talk-link'),
-  joinTalk: document.getElementById('join-talk-btn'),
+  qrImg: document.getElementById('board-qr-img'),
+  qrLink: document.getElementById('board-qr-link'),
+  copyLink: document.getElementById('copy-board-link-btn'),
 };
 
 function loadSettings() {
@@ -64,6 +66,17 @@ function escapeText(value) { return String(value || '').replace(/[&<>\"]/g, ch =
 function shortPeer(peerId) { return peerId ? peerId.slice(0, 8) : 'local'; }
 function peerName(peerId) { return peerMap[peerId] && peerMap[peerId].name ? peerMap[peerId].name : 'Device ' + shortPeer(peerId); }
 function chLabel(ch) { return 'CH ' + String(ch).padStart(2, '0'); }
+
+function joinLink() {
+  const url = new URL('index.html', location.href);
+  url.searchParams.set('ch', String(currentCh()));
+  return url.toString();
+}
+function renderQr() {
+  const link = joinLink();
+  if (els.qrLink) els.qrLink.textContent = link;
+  if (els.qrImg) els.qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=' + encodeURIComponent(link);
+}
 
 function recordActivity(item) {
   try {
@@ -237,8 +250,8 @@ function renderBoard() {
   els.peers.textContent = String(Object.keys(peerMap).length);
   els.mode.textContent = strategyName.toUpperCase();
   els.subtitle.textContent = displayName() + ' · ' + chLabel(currentCh()) + ' · Command Board';
-  els.openTalk.href = 'index.html?ch=' + currentCh();
-  els.joinTalk.href = 'index.html?ch=' + currentCh();
+  els.openTalk.href = joinLink();
+  renderQr();
   renderRooms();
   renderDevices();
   renderActivity();
@@ -277,6 +290,16 @@ function alertAll() {
 els.pingAll.addEventListener('click', pingAll);
 els.alertAll.addEventListener('click', alertAll);
 els.refresh.addEventListener('click', () => { renderBoard(); toast('Board refreshed'); });
+if (els.copyLink) els.copyLink.addEventListener('click', async () => {
+  const link = joinLink();
+  try {
+    await navigator.clipboard.writeText(link);
+    els.copyLink.textContent = 'Copied ✓';
+    setTimeout(() => { els.copyLink.textContent = 'Copy Join Link'; }, 1200);
+  } catch {
+    if (els.qrLink) els.qrLink.textContent = link;
+  }
+});
 function exportTextFile(filename, content) {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);

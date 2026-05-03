@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="WalkTalk">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <title>WalkTalk v3 Arctic Command Board</title>
+    <title>WalkTalk v3.1 Clean Command Board</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@
 <div class="control-shell">
     <div class="control-header">
         <div>
-            <div class="control-kicker">WALKTALK v3 · ARCTIC SIGNAL</div>
+            <div class="control-kicker">WALKTALK v3.1 · CLEAN COMMAND</div>
             <div class="control-title">ARCTIC COMMAND</div>
             <div class="control-subtitle" id="board-subtitle">Loading local control center…</div>
         </div>
@@ -55,13 +55,21 @@
                 <button class="board-btn warning" id="ping-all-btn">Ping All</button>
                 <button class="board-btn danger" id="alert-all-btn">Alert All</button>
                 <button class="board-btn" id="refresh-board-btn">Refresh</button>
-                <a class="board-btn" href="index.html" id="join-talk-btn">Open Talk</a>
             </div>
         </section>
 
         <section class="board-card">
             <div class="board-card-title">QUICK MESSAGES</div>
             <div class="board-grid" id="board-status-buttons"></div>
+        </section>
+
+        <section class="board-card">
+            <div class="board-card-title">QR PAIRING</div>
+            <div class="board-qr-wrap">
+                <img id="board-qr-img" class="qr-img" alt="QR code for current room">
+                <div class="qr-link" id="board-qr-link"></div>
+                <button class="board-btn" id="copy-board-link-btn" type="button">Copy Join Link</button>
+            </div>
         </section>
 
         <section class="board-card">

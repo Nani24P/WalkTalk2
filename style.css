@@ -1223,3 +1223,160 @@ body.state-connected .tune-btn { background: rgba(143,217,255,0.12); color:#ecfb
     .event-kicker { display:none; }
     .home-event-strip { grid-template-columns: 1fr; }
 }
+
+/* ── WalkTalk v3.1: Clean Command Patch ─────────────────────────────────── */
+.clean-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+.header-line {
+    display: grid;
+    align-items: center;
+    width: 100%;
+}
+.header-line-one {
+    grid-template-columns: 74px 1fr 104px;
+    gap: 8px;
+}
+.header-line-two {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.signal-gif {
+    justify-content: flex-start;
+    gap: 8px;
+    min-width: 0;
+}
+.signal-gif .signal-bars { height: 18px; }
+.signal-gif .sbar { animation: signal-soft-pulse 1.25s ease-in-out infinite; }
+.signal-gif .s2 { animation-delay: .08s; }
+.signal-gif .s3 { animation-delay: .16s; }
+.signal-gif .s4 { animation-delay: .24s; }
+.signal-gif .s5 { animation-delay: .32s; }
+@keyframes signal-soft-pulse { 0%,100%{opacity:.45; transform:scaleY(.85)} 45%{opacity:1; transform:scaleY(1.05)} }
+.header-device {
+    text-align: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    font-family: var(--font-display);
+    font-size: .56rem;
+    letter-spacing: 1.4px;
+    padding-inline: 8px;
+}
+.header-logo {
+    justify-content: flex-end;
+    gap: 6px;
+    min-width: 0;
+}
+.header-logo .logo-text {
+    font-size: .78rem;
+    letter-spacing: 2.2px;
+    white-space: nowrap;
+}
+.header-logo .logo-mark { font-size: 1rem; }
+.board-header-btn,
+.alert-header-btn {
+    min-height: 39px;
+    border-radius: 14px;
+    font-family: var(--font-display);
+    letter-spacing: 2px;
+    text-decoration: none;
+}
+.board-header-btn { justify-content: flex-start; padding-left: 18px; }
+.alert-header-btn {
+    justify-content: flex-end;
+    padding-right: 18px;
+    color: #ff9a9a !important;
+    border-color: rgba(255,109,109,.32) !important;
+}
+.comms-stack {
+    flex-shrink: 0;
+    margin: 0 0 8px;
+}
+.comms-ready-line {
+    font-family: var(--font-display);
+    font-size: .55rem;
+    letter-spacing: 2.2px;
+    color: #b8dfff;
+    text-align: center;
+    margin-bottom: 6px;
+    text-shadow: 0 0 18px rgba(143,217,255,.18);
+}
+.tuner-panel {
+    padding: 12px 13px 11px;
+    gap: 8px;
+    border-radius: 15px;
+}
+.tuner-header { min-height: 16px; }
+.tuner-display { padding: 0; }
+.tuner-ch-label { margin-bottom: 3px; }
+.tuner-freq { font-size: clamp(1.86rem, 6.6vw, 2.28rem); }
+.tuner-band { margin-top: 3px; font-size: .48rem; }
+.tape-wrapper { height: 56px; }
+.freq-tape { padding-bottom: 7px; }
+.ch-tick.active .tick-bar { height: 28px !important; }
+.ch-tick.heat-busy .tick-bar { height: 20px; }
+.ch-tick.major .tick-bar { height: 16px; }
+.tuner-controls { gap: 7px; }
+.step-btn { padding: 9px 12px; }
+.tune-btn { padding: 10px 12px; }
+.ptt-stage {
+    width: clamp(176px, 32svh, 238px);
+    height: clamp(176px, 32svh, 238px);
+}
+#ptt-button {
+    width: clamp(116px, 20svh, 150px);
+    height: clamp(116px, 20svh, 150px);
+}
+.home-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 300px;
+}
+.action-mute.muted-on {
+    color: #ffb86b !important;
+    border-color: rgba(255,184,107,.42) !important;
+    box-shadow: 0 0 16px rgba(255,184,107,.10);
+}
+body.is-muted .waveform span { opacity: .32; }
+body.is-muted .feedback::after {
+    content: ' · MUTED';
+    color: #ffb86b;
+}
+.ptt-mode-row { display: none !important; }
+@media (max-width: 430px) {
+    .clean-header { margin-bottom: 7px; gap: 7px; }
+    .header-line-one { grid-template-columns: 64px 1fr 94px; gap: 6px; }
+    .header-line-two { gap: 10px; }
+    .header-logo .logo-text { font-size: .68rem; letter-spacing: 1.6px; }
+    .header-device { font-size: .50rem; }
+    .board-header-btn, .alert-header-btn { min-height: 36px; }
+    .home-event-strip { margin: 0; min-height: 34px; padding: 7px 9px; }
+    .comms-ready-line { font-size: .50rem; letter-spacing: 1.7px; }
+    .tuner-panel { padding: 10px 11px 10px; gap: 7px; }
+    .tape-wrapper { height: 50px; }
+    .tactical-actions .status-pill { min-height: 38px; }
+}
+@media (max-height: 760px) {
+    .tuner-panel { padding-top: 9px; padding-bottom: 9px; gap: 6px; }
+    .tape-wrapper { height: 46px; }
+    .ptt-stage { width: clamp(166px, 30svh, 220px); height: clamp(166px, 30svh, 220px); }
+    #ptt-button { width: clamp(108px, 19svh, 142px); height: clamp(108px, 19svh, 142px); }
+}
+.board-qr-wrap {
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+}
+.board-qr-wrap .qr-img {
+    max-width: 180px;
+    width: min(180px, 62vw);
+}
+.board-qr-wrap .qr-link {
+    max-width: 100%;
+    word-break: break-all;
+    text-align: center;
+}
