@@ -1,5 +1,5 @@
 // ╔══════════════════════════════════════════════════════════════════════════╗
-// ║  WALKIE / WalkTalk v2 — app.js                                          ║
+// ║  WALKIE / WalkTalk v2.5 — app.js                                          ║
 // ║  Same simple web-app architecture, upgraded with device names,          ║
 // ║  dashboard, status messages, chat, pings, alerts, QR pairing, and PWA.  ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
@@ -26,6 +26,7 @@ const BASE_FREQ   = 462.5625;
 const FREQ_STEP   = 0.025;
 const SETTINGS_KEY = 'walktalk-v2-settings';
 const CHAT_KEY     = 'walktalk-v2-chat';
+const ACTIVITY_KEY = 'walktalk-v2-activity';
 
 const DEFAULT_SETTINGS = {
     deviceName: '',
@@ -137,6 +138,24 @@ function loadChat() {
 function saveChat() {
     localStorage.setItem(CHAT_KEY, JSON.stringify(chatMessages.slice(-80)));
 }
+
+function recordActivity(item) {
+    try {
+        const current = JSON.parse(localStorage.getItem(ACTIVITY_KEY) || '[]');
+        const list = Array.isArray(current) ? current : [];
+        list.push({
+            type: item.type || 'event',
+            from: item.from || displayName(),
+            text: item.text || '',
+            ts: item.ts || Date.now(),
+            local: !!item.local,
+        });
+        localStorage.setItem(ACTIVITY_KEY, JSON.stringify(list.slice(-120)));
+    } catch (e) {
+        // Activity inbox is helpful but non-critical.
+    }
+}
+
 
 function defaultDeviceName() {
     const ua = navigator.userAgent || '';
@@ -926,6 +945,7 @@ function addChatMessage(message) {
     chatMessages.push(normalized);
     chatMessages = chatMessages.slice(-80);
     saveChat();
+    recordActivity(normalized);
     if (!normalized.local && chatPanel && chatPanel.classList.contains('hidden')) {
         unreadChatCount += 1;
     }
