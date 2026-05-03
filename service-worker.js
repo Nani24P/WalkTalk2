@@ -1,4 +1,4 @@
-const CACHE_NAME = 'walktalk-v2-cache-1';
+const CACHE_NAME = 'walktalk-v21-cache-1';
 const APP_SHELL = [
   './',
   './index.html',

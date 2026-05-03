@@ -27,11 +27,15 @@ log('UNHANDLED PROMISE: ' + e.reason, 'error');
 });
 
 // ── Debug panel toggle ────────────────────────────────────────────────────
-document.getElementById('debug-toggle').addEventListener('click', function () {
+var debugToggle = document.getElementById('debug-toggle');
+if (debugToggle) {
+debugToggle.addEventListener('click', function () {
 var panel = document.getElementById('debug-panel');
+if (!panel) return;
 panel.classList.toggle('hidden');
 this.textContent = panel.classList.contains('hidden') ? '⌥ DEBUG' : '✕ DEBUG';
 });
+}
 
 // ── Boot diagnostics ──────────────────────────────────────────────────────
 log('Page loaded ✓', 'ok');

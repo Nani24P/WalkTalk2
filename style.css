@@ -623,3 +623,110 @@ body.state-tx .waveform span { background:var(--tx-primary); box-shadow:0 0 4px 
     .mini-btn, .mini-chip { padding: 7px 8px; letter-spacing: 1px; }
     .quick-status-row { grid-template-columns: 1fr; }
 }
+
+/* ── WalkTalk v2.1 mobile polish patch ───────────────────────────────────── */
+body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.app-container {
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+}
+.v2-topbar {
+    position: sticky;
+    top: calc(8px + env(safe-area-inset-top));
+    z-index: 30;
+    padding: 6px;
+    margin-left: -6px;
+    margin-right: -6px;
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 16px;
+    background: rgba(7,9,13,0.74);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+.ptt-mode-row,
+.quick-status-row,
+.meta-row,
+.offline-banner {
+    margin-bottom: max(14px, env(safe-area-inset-bottom));
+}
+.quick-status-row {
+    padding-bottom: 4px;
+}
+.debug-setting-row {
+    gap: 12px;
+}
+.debug-settings-btn {
+    min-width: 92px;
+    padding: 7px 10px;
+    color: #8b96a7;
+}
+.settings-debug-panel {
+    margin-top: 10px;
+    margin-bottom: 6px;
+}
+.settings-debug-panel #debug-log,
+#debug-panel.settings-debug-panel #debug-log {
+    max-height: 190px;
+}
+.chat-message.incoming {
+    border-color: rgba(255,140,0,0.18);
+    background: rgba(255,140,0,0.035);
+}
+.chat-message.ping-note {
+    border-color: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.035);
+}
+.chat-head span:first-child {
+    max-width: 54%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.chat-btn-has-unread {
+    color: #ffb366;
+    border-color: rgba(255,140,0,0.45);
+    box-shadow: 0 0 16px rgba(255,140,0,0.10);
+}
+@media (max-width: 430px) {
+    .app-container {
+        padding-left: 16px;
+        padding-right: 16px;
+        padding-bottom: calc(42px + env(safe-area-inset-bottom));
+    }
+    header {
+        margin-bottom: 16px;
+    }
+    .v2-topbar {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 7px;
+    }
+    .device-chip {
+        grid-column: 1 / -1;
+        min-width: 0;
+        text-align: center;
+    }
+    .mini-btn,
+    .mini-chip,
+    .status-pill {
+        min-height: 38px;
+    }
+    .quick-status-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    }
+    .ptt-mode-row {
+        position: relative;
+        z-index: 5;
+        margin-bottom: 14px;
+    }
+    .chat-box {
+        max-height: calc(100dvh - 44px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    }
+    .chat-log {
+        height: min(360px, 48dvh);
+    }
+}

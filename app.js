@@ -107,6 +107,7 @@ let countdownTimer = null;
 let audioCtx      = null;
 let tapLocked     = false;
 let chatMessages  = loadChat();
+let unreadChatCount = 0;
 let lastKnownStrategy = null;
 let myPresence = buildPresence('idle');
 
@@ -246,9 +247,9 @@ function beep(kind) {
     const map = {
         txStart: [620, 0.08, 0.05],
         txEnd: [330, 0.07, 0.04],
-        ping: [880, 0.12, 0.07],
-        emergency: [420, 0.35, 0.12],
-        message: [520, 0.08, 0.04],
+        ping: [1040, 0.16, 0.18],
+        emergency: [520, 0.38, 0.18],
+        message: [560, 0.09, 0.065],
         error: [180, 0.16, 0.06],
     };
     const [freq, duration, volume] = map[kind] || map.message;
@@ -262,8 +263,8 @@ function beep(kind) {
     osc.stop(now + duration + 0.02);
 
     if (kind === 'emergency') {
-        setTimeout(() => beep('ping'), 180);
-        setTimeout(() => beep('ping'), 360);
+        setTimeout(() => beep('ping'), 170);
+        setTimeout(() => beep('ping'), 340);
     }
 }
 
@@ -604,7 +605,7 @@ function setupChannelActions() {
     getChat((data, peerId) => {
         const sender = data && data.name ? data.name : peerName(peerId);
         addChatMessage({ type: 'chat', from: sender, text: data.text, ts: Date.now(), local: false });
-        feedback('MESSAGE FROM ' + sender.toUpperCase());
+        feedback('MSG FROM ' + sender.toUpperCase() + ': ' + shortForFeedback(data && data.text).toUpperCase());
         beep('message');
     });
 
@@ -858,7 +859,12 @@ document.addEventListener('keyup', e => {
 function openPanel(panel) {
     panel.classList.remove('hidden');
     if (panel === dashboardPanel) renderDashboard();
-    if (panel === chatPanel) renderChat();
+    if (panel === chatPanel) {
+        unreadChatCount = 0;
+        updateChatBadge();
+        renderChat();
+        setTimeout(() => chatInput && chatInput.focus(), 120);
+    }
     if (panel === qrPanel) updateQr();
 }
 function closePanel(panel) {
@@ -905,7 +911,7 @@ function sendPingToPeer(peerId) {
         if (sendLobbyPing) sendLobbyPing(payload, peerId);
         else if (sendPing) sendPing(payload, peerId);
         addChatMessage({ type: 'ping', from: displayName(), text: 'Ping sent to ' + peerName(peerId), ts: Date.now(), local: true });
-        feedback('PING SENT');
+        feedback('PING SENT TO ' + peerName(peerId).toUpperCase());
         beep('ping');
     } catch (e) {
         log('Ping failed: ' + e.message, 'warn');
@@ -916,10 +922,27 @@ function sendPingToPeer(peerId) {
 
 // ── Chat / status / alerts ────────────────────────────────────────────────
 function addChatMessage(message) {
-    chatMessages.push(message);
+    const normalized = { ...message, ts: message.ts || Date.now() };
+    chatMessages.push(normalized);
     chatMessages = chatMessages.slice(-80);
     saveChat();
+    if (!normalized.local && chatPanel && chatPanel.classList.contains('hidden')) {
+        unreadChatCount += 1;
+    }
+    updateChatBadge();
     renderChat();
+}
+
+function updateChatBadge() {
+    if (!chatBtn) return;
+    chatBtn.textContent = unreadChatCount > 0 ? 'CHAT · ' + unreadChatCount : 'CHAT';
+    chatBtn.classList.toggle('chat-btn-has-unread', unreadChatCount > 0);
+}
+
+function shortForFeedback(text) {
+    const clean = String(text || '').trim();
+    if (!clean) return '';
+    return clean.length > 28 ? clean.slice(0, 28) + '…' : clean;
 }
 
 function renderChat() {
@@ -930,8 +953,9 @@ function renderChat() {
     }
     chatLog.innerHTML = chatMessages.map(msg => {
         const type = msg.type ? msg.type.toUpperCase() : 'CHAT';
-        return '<div class="chat-message ' + (msg.local ? 'local' : '') + '">' +
-            '<div class="chat-head"><span>' + escapeText(msg.from || 'Device') + '</span><span>' + type + ' · ' + prettyTime(msg.ts) + '</span></div>' +
+        const cls = (msg.local ? 'local' : 'incoming') + (msg.type === 'ping' ? ' ping-note' : '');
+        return '<div class="chat-message ' + cls + '">' +
+            '<div class="chat-head"><span>' + escapeText(msg.local ? 'You' : (msg.from || 'Device')) + '</span><span>' + type + ' · ' + prettyTime(msg.ts) + '</span></div>' +
             '<div class="chat-text">' + escapeText(msg.text || '') + '</div>' +
         '</div>';
     }).join('');
@@ -947,7 +971,7 @@ function sendRoomChat() {
         else if (sendLobbyStatus) sendLobbyStatus(payload);
         addChatMessage({ type: 'chat', from: displayName(), text, ts: Date.now(), local: true });
         chatInput.value = '';
-        feedback('MESSAGE SENT');
+        feedback('SENT: ' + shortForFeedback(text).toUpperCase());
         beep('message');
     } catch (e) {
         log('Chat send failed: ' + e.message, 'warn');
@@ -1076,6 +1100,7 @@ buildDefaultChannelOptions();
 buildTape();
 applySettingsToUi();
 renderChat();
+updateChatBadge();
 renderDashboard();
 updateOfflineBanner();
 updateQr();
