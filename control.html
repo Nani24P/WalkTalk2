@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#07111c">
-    <meta name="description" content="WalkTalk Command Board and activity inbox.">
+    <meta name="description" content="WalkTalk v4.0 Arctic Command Board.">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WalkTalk">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <title>WalkTalk v3.1 Clean Command Board</title>
+    <title>WalkTalk v4.0 Arctic Command Board</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -22,25 +22,34 @@
 <div class="scanlines"></div>
 
 <div class="control-shell">
-    <div class="control-header">
-        <div>
-            <div class="control-kicker">WALKTALK v3.1 · CLEAN COMMAND</div>
-            <div class="control-title">ARCTIC COMMAND</div>
+    <div class="control-header compact-board-header">
+        <div class="control-heading">
+            <div class="control-title">COMMAND BOARD</div>
             <div class="control-subtitle" id="board-subtitle">Loading local control center…</div>
         </div>
-        <a class="board-btn" href="index.html" id="open-talk-link">TALK</a>
+        <a class="board-btn board-talk-link" href="index.html" id="open-talk-link">TALK</a>
     </div>
 
     <div class="board-toast" id="board-toast"></div>
 
     <div class="control-scroll">
-        <section class="board-card">
+        <section class="board-card board-summary-card">
             <div class="board-card-title">STATUS</div>
-            <div class="board-status-row">
+            <div class="board-status-row board-status-row-compact">
                 <div class="stat-tile"><div class="stat-label">Device</div><div class="stat-value" id="board-device">DEVICE</div></div>
                 <div class="stat-tile"><div class="stat-label">Room</div><div class="stat-value" id="board-room">CH --</div></div>
-                <div class="stat-tile"><div class="stat-label">Peers Seen</div><div class="stat-value" id="board-peers">0</div></div>
-                <div class="stat-tile"><div class="stat-label">Mode</div><div class="stat-value" id="board-mode">BOARD</div></div>
+                <div class="stat-tile"><div class="stat-label">Peers</div><div class="stat-value" id="board-peers">0</div></div>
+                <div class="stat-tile"><div class="stat-label">Link</div><div class="stat-value" id="board-mode">READY</div></div>
+            </div>
+        </section>
+
+        <section class="board-card command-hero-card">
+            <div class="board-card-title">COMMANDS</div>
+            <div class="board-grid command-grid">
+                <button class="board-btn warning" id="ping-all-btn">Ping All</button>
+                <button class="board-btn danger" id="alert-all-btn">Alert All</button>
+                <button class="board-btn" id="show-qr-btn">QR Pairing</button>
+                <button class="board-btn" id="copy-board-link-btn" type="button">Copy Join Link</button>
             </div>
         </section>
 
@@ -49,27 +58,9 @@
             <div class="board-grid three" id="room-presets"></div>
         </section>
 
-        <section class="board-card command-hero-card">
-            <div class="board-card-title">COMMAND ACTIONS</div>
-            <div class="board-grid">
-                <button class="board-btn warning" id="ping-all-btn">Ping All</button>
-                <button class="board-btn danger" id="alert-all-btn">Alert All</button>
-                <button class="board-btn" id="refresh-board-btn">Refresh</button>
-            </div>
-        </section>
-
         <section class="board-card">
             <div class="board-card-title">QUICK MESSAGES</div>
             <div class="board-grid" id="board-status-buttons"></div>
-        </section>
-
-        <section class="board-card">
-            <div class="board-card-title">QR PAIRING</div>
-            <div class="board-qr-wrap">
-                <img id="board-qr-img" class="qr-img" alt="QR code for current room">
-                <div class="qr-link" id="board-qr-link"></div>
-                <button class="board-btn" id="copy-board-link-btn" type="button">Copy Join Link</button>
-            </div>
         </section>
 
         <section class="board-card">
@@ -81,6 +72,23 @@
             <div class="board-card-title"><span>ACTIVITY INBOX</span><span class="card-actions"><button class="mini-btn" id="export-inbox-btn" type="button">EXPORT</button><button class="mini-btn danger-mini" id="clear-inbox-btn" type="button">CLEAR</button></span></div>
             <div id="activity-list"></div>
         </section>
+    </div>
+</div>
+
+<div id="board-qr-modal" class="modal-overlay hidden">
+    <div class="modal-box v2-panel-box qr-box board-qr-modal-box">
+        <div class="panel-title-row">
+            <div>
+                <div class="modal-title">QR PAIRING</div>
+                <div class="panel-subtitle">Scan to open this channel on another device</div>
+            </div>
+            <button class="panel-close" id="close-board-qr-btn" type="button">✕</button>
+        </div>
+        <img id="board-qr-img" class="qr-img" alt="QR code for current room">
+        <div class="qr-link" id="board-qr-link"></div>
+        <div class="chat-tools-row">
+            <button class="mini-btn" id="copy-board-link-btn-modal" type="button">COPY LINK</button>
+        </div>
     </div>
 </div>
 

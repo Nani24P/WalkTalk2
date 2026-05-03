@@ -1,18 +1,16 @@
-// WalkTalk v3.1 Clean Command — Command Board screen
+// WalkTalk v4.0 Arctic Signal — Command Board
 const STRATEGIES = [
-  { name: 'nostr',   urls: ['https://esm.sh/trystero/nostr',   'https://cdn.skypack.dev/trystero/nostr']   },
-  { name: 'mqtt',    urls: ['https://esm.sh/trystero/mqtt',    'https://cdn.skypack.dev/trystero/mqtt']    },
+  { name: 'nostr',   urls: ['https://esm.sh/trystero/nostr',   'https://cdn.skypack.dev/trystero/nostr'] },
+  { name: 'mqtt',    urls: ['https://esm.sh/trystero/mqtt',    'https://cdn.skypack.dev/trystero/mqtt'] },
   { name: 'torrent', urls: ['https://esm.sh/trystero/torrent', 'https://cdn.skypack.dev/trystero/torrent'] },
 ];
-const NOSTR_RELAYS = ['wss://relay.damus.io','wss://nos.lol','wss://relay.snort.social','wss://relay.nostr.band'];
+const NOSTR_RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.snort.social', 'wss://relay.nostr.band'];
 const APP_ID = 'walkie-ptt-v3';
 const LOBBY_CODE = 'walkie-lobby-v1';
 const SETTINGS_KEY = 'walktalk-v2-settings';
 const ACTIVITY_KEY = 'walktalk-v2-activity';
 const DEFAULT_SETTINGS = { deviceName: '', defaultChannel: 7, audioAlerts: true, vibration: true, autoJoin: false, tapLock: false };
-const ROOM_PRESETS = [
-  ['Home', 7], ['Kitchen', 8], ['Bedroom', 9], ['Office', 10], ['Garage', 11], ['Upstairs', 12]
-];
+const ROOM_PRESETS = [['Home',7], ['Kitchen',8], ['Bedroom',9], ['Office',10], ['Garage',11], ['Upstairs',12]];
 const QUICK_MESSAGES = ['Call me', 'Need help', 'Open the door', 'All good'];
 
 let settings = loadSettings();
@@ -39,13 +37,16 @@ const els = {
   activity: document.getElementById('activity-list'),
   pingAll: document.getElementById('ping-all-btn'),
   alertAll: document.getElementById('alert-all-btn'),
-  refresh: document.getElementById('refresh-board-btn'),
+  showQr: document.getElementById('show-qr-btn'),
   clearInbox: document.getElementById('clear-inbox-btn'),
   exportInbox: document.getElementById('export-inbox-btn'),
   openTalk: document.getElementById('open-talk-link'),
+  qrModal: document.getElementById('board-qr-modal'),
   qrImg: document.getElementById('board-qr-img'),
   qrLink: document.getElementById('board-qr-link'),
+  closeQr: document.getElementById('close-board-qr-btn'),
   copyLink: document.getElementById('copy-board-link-btn'),
+  copyLinkModal: document.getElementById('copy-board-link-btn-modal'),
 };
 
 function loadSettings() {
@@ -77,6 +78,13 @@ function renderQr() {
   if (els.qrLink) els.qrLink.textContent = link;
   if (els.qrImg) els.qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=' + encodeURIComponent(link);
 }
+function showQrModal() {
+  renderQr();
+  if (els.qrModal) els.qrModal.classList.remove('hidden');
+}
+function hideQrModal() {
+  if (els.qrModal) els.qrModal.classList.add('hidden');
+}
 
 function recordActivity(item) {
   try {
@@ -101,8 +109,7 @@ function toast(msg) {
 function vibrate(pattern) { if (settings.vibration && navigator.vibrate) navigator.vibrate(pattern); }
 function unlockAudio() {
   if (!settings.audioAlerts || audioCtx) return;
-  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-  catch {}
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
 }
 function beep(kind = 'message') {
   if (!settings.audioAlerts) return;
@@ -189,8 +196,8 @@ async function initLobby() {
     try { sendPresence(buildPresence()); } catch {}
     renderBoard();
     toast('Board online via ' + strategyName);
-  } catch (e) {
-    els.subtitle.textContent = 'Board opened. Signaling unavailable right now.';
+  } catch {
+    els.subtitle.textContent = displayName() + ' · ' + chLabel(currentCh()) + ' · Offline board';
     toast('Board offline');
   }
 }
@@ -214,9 +221,7 @@ function renderRooms() {
 }
 function renderQuickMessages() {
   els.statusButtons.innerHTML = QUICK_MESSAGES.map(msg => `<button class="board-btn status-board-btn" data-status="${escapeText(msg)}">${escapeText(msg)}</button>`).join('');
-  els.statusButtons.querySelectorAll('.status-board-btn').forEach(btn => {
-    btn.addEventListener('click', () => sendStatus(btn.dataset.status));
-  });
+  els.statusButtons.querySelectorAll('.status-board-btn').forEach(btn => btn.addEventListener('click', () => sendStatus(btn.dataset.status)));
 }
 function renderDevices() {
   const peers = Object.entries(peerMap).sort((a,b) => (b[1].lastSeen || 0) - (a[1].lastSeen || 0));
@@ -248,8 +253,8 @@ function renderBoard() {
   els.device.textContent = displayName().toUpperCase();
   els.room.textContent = chLabel(currentCh());
   els.peers.textContent = String(Object.keys(peerMap).length);
-  els.mode.textContent = strategyName.toUpperCase();
-  els.subtitle.textContent = displayName() + ' · ' + chLabel(currentCh()) + ' · Command Board';
+  els.mode.textContent = strategyName === 'offline' ? 'OFFLINE' : 'ONLINE';
+  els.subtitle.textContent = displayName() + ' · ' + chLabel(currentCh());
   els.openTalk.href = joinLink();
   renderQr();
   renderRooms();
@@ -286,20 +291,17 @@ function alertAll() {
   beep('emergency');
   vibrate([120,80,120,80,180]);
 }
-
-els.pingAll.addEventListener('click', pingAll);
-els.alertAll.addEventListener('click', alertAll);
-els.refresh.addEventListener('click', () => { renderBoard(); toast('Board refreshed'); });
-if (els.copyLink) els.copyLink.addEventListener('click', async () => {
+async function copyJoinLink() {
   const link = joinLink();
   try {
     await navigator.clipboard.writeText(link);
-    els.copyLink.textContent = 'Copied ✓';
-    setTimeout(() => { els.copyLink.textContent = 'Copy Join Link'; }, 1200);
+    toast('Join link copied');
   } catch {
     if (els.qrLink) els.qrLink.textContent = link;
+    toast('Copy failed · link shown below');
+    showQrModal();
   }
-});
+}
 function exportTextFile(filename, content) {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -328,11 +330,24 @@ function clearActivity() {
   renderActivity();
   toast('Inbox cleared');
 }
-els.clearInbox.addEventListener('click', clearActivity);
-if (els.exportInbox) els.exportInbox.addEventListener('click', exportActivity);
+
+els.pingAll?.addEventListener('click', pingAll);
+els.alertAll?.addEventListener('click', alertAll);
+els.showQr?.addEventListener('click', showQrModal);
+els.closeQr?.addEventListener('click', hideQrModal);
+els.qrModal?.addEventListener('click', (e) => { if (e.target === els.qrModal) hideQrModal(); });
+els.clearInbox?.addEventListener('click', clearActivity);
+els.exportInbox?.addEventListener('click', exportActivity);
+els.copyLink?.addEventListener('click', copyJoinLink);
+els.copyLinkModal?.addEventListener('click', copyJoinLink);
 window.addEventListener('storage', renderActivity);
-window.addEventListener('beforeunload', () => { try { if (sendPresence) sendPresence({ ...buildPresence(), status: 'idle' }); } catch {} try { if (lobbyRoom) lobbyRoom.leave(); } catch {} });
-if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+window.addEventListener('beforeunload', () => {
+  try { if (sendPresence) sendPresence({ ...buildPresence(), status: 'idle' }); } catch {}
+  try { if (lobbyRoom) lobbyRoom.leave(); } catch {}
+});
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+}
 renderQuickMessages();
 renderBoard();
 initLobby();
