@@ -1581,3 +1581,380 @@ body.is-muted .feedback::after {
         padding: 12px;
     }
 }
+
+
+/* ── WalkTalk v4.1: Screen 1 Reliable iPhone Hotfix ───────────────────────
+   Fixes v4.0 horizontal overflow / broken two-column appearance on iPhone.
+   Screen 2 styles are intentionally not changed. */
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 560px;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden !important;
+}
+
+/* Force home screen back to one clean vertical stack. */
+.clean-header,
+.comms-stack,
+.tuner-panel,
+.locked-badge,
+.disconnect-row,
+.ptt-area,
+.meta-row,
+.home-actions {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Header: fixed 2-line structure without pushing logo off-screen. */
+.clean-header {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    margin: 0 0 8px !important;
+    flex-shrink: 0;
+}
+
+.header-line {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.header-line-one {
+    display: grid !important;
+    grid-template-columns: 42px minmax(0, 1fr) minmax(74px, auto) !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.header-line-two {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(104px, 128px) !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.signal-gif {
+    width: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    overflow: hidden;
+}
+
+.signal-gif .signal-bars {
+    max-width: 28px;
+}
+
+.header-device {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}
+
+.header-logo {
+    min-width: 0 !important;
+    max-width: 96px !important;
+    width: auto !important;
+    overflow: hidden !important;
+    justify-self: end !important;
+    justify-content: flex-end !important;
+}
+
+.header-logo .logo-text {
+    display: block;
+    max-width: 96px !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+    font-size: clamp(.54rem, 2.4vw, .72rem) !important;
+    letter-spacing: clamp(.7px, .35vw, 1.6px) !important;
+}
+
+.board-header-btn,
+.alert-header-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 38px !important;
+}
+
+.board-header-btn {
+    justify-content: flex-start !important;
+}
+
+.alert-header-btn {
+    justify-content: center !important;
+    min-width: 0 !important;
+}
+
+/* Remove the redundant static COMMS line; keep only the live strip. */
+.comms-ready-line {
+    display: none !important;
+}
+
+.comms-stack {
+    margin: 0 0 8px !important;
+    flex-shrink: 0;
+}
+
+.home-event-strip {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Tuner must never become a side column. */
+.tuner-panel {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+    align-self: stretch !important;
+    flex-shrink: 0;
+}
+
+.tuner-header,
+.tuner-display,
+.tape-wrapper,
+.tuner-controls {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.tuner-freq-row {
+    max-width: 100%;
+    overflow: hidden;
+    justify-content: center;
+}
+
+.tuner-freq {
+    font-size: clamp(1.78rem, 11vw, 3.2rem) !important;
+    max-width: 100%;
+    line-height: .92;
+}
+
+.tuner-unit {
+    font-size: clamp(.52rem, 2.8vw, .82rem) !important;
+}
+
+.tape-wrapper {
+    height: 48px !important;
+    overflow: hidden !important;
+}
+
+.tuner-controls {
+    display: grid !important;
+    grid-template-columns: minmax(58px, .8fr) minmax(120px, 1.6fr) minmax(58px, .8fr) !important;
+    gap: 8px !important;
+}
+
+.step-btn,
+.tune-btn {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Main PTT area remains centered under tuner. */
+.ptt-area {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+}
+
+.ptt-stage {
+    width: clamp(164px, 29svh, 224px) !important;
+    height: clamp(164px, 29svh, 224px) !important;
+    margin-inline: auto !important;
+    flex-shrink: 0;
+}
+
+#ptt-button {
+    width: clamp(106px, 18svh, 142px) !important;
+    height: clamp(106px, 18svh, 142px) !important;
+}
+
+.home-actions {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    width: min(100%, 330px) !important;
+    margin-inline: auto !important;
+}
+
+.home-actions .status-pill {
+    min-width: 0 !important;
+}
+
+.meta-row {
+    width: min(100%, 310px) !important;
+    margin-inline: auto !important;
+}
+
+/* Small iPhone tuning. */
+@media (max-width: 430px) {
+    .app-container {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+        padding-top: calc(10px + env(safe-area-inset-top)) !important;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+        gap: 8px !important;
+    }
+
+    .header-line-one {
+        grid-template-columns: 38px minmax(0, 1fr) 76px !important;
+        gap: 7px !important;
+    }
+
+    .header-line-two {
+        grid-template-columns: minmax(0, 1fr) 104px !important;
+        gap: 9px !important;
+    }
+
+    .signal-gif {
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+    }
+
+    .header-device {
+        font-size: .49rem !important;
+        letter-spacing: 1px !important;
+        min-height: 36px !important;
+    }
+
+    .header-logo {
+        max-width: 76px !important;
+    }
+
+    .header-logo .logo-text {
+        max-width: 76px !important;
+        font-size: .50rem !important;
+        letter-spacing: .5px !important;
+    }
+
+    .board-header-btn,
+    .alert-header-btn {
+        min-height: 36px !important;
+        font-size: .54rem !important;
+        letter-spacing: 1.3px !important;
+        padding-inline: 12px !important;
+    }
+
+    .alert-header-btn {
+        min-width: 0 !important;
+    }
+
+    .alert-inline-icon {
+        font-size: .72rem !important;
+    }
+
+    .home-event-strip {
+        min-height: 38px !important;
+        padding: 8px 10px !important;
+    }
+
+    .tuner-panel {
+        padding: 10px 10px 9px !important;
+        gap: 6px !important;
+        border-radius: 16px !important;
+    }
+
+    .tuner-freq {
+        font-size: clamp(2.35rem, 13vw, 3rem) !important;
+    }
+
+    .tuner-band {
+        font-size: .42rem !important;
+        letter-spacing: 2px !important;
+    }
+
+    .tape-wrapper {
+        height: 44px !important;
+    }
+
+    .tuner-controls {
+        grid-template-columns: 64px minmax(0, 1fr) 64px !important;
+        gap: 7px !important;
+    }
+
+    .step-btn {
+        padding: 8px 5px !important;
+        font-size: .52rem !important;
+        letter-spacing: 1px !important;
+    }
+
+    .tune-btn {
+        padding: 9px 8px !important;
+        font-size: .62rem !important;
+        letter-spacing: 2px !important;
+    }
+
+    .ptt-stage {
+        width: clamp(158px, 27svh, 210px) !important;
+        height: clamp(158px, 27svh, 210px) !important;
+    }
+
+    #ptt-button {
+        width: clamp(102px, 17svh, 132px) !important;
+        height: clamp(102px, 17svh, 132px) !important;
+    }
+
+    .home-actions {
+        width: min(100%, 310px) !important;
+        gap: 8px !important;
+    }
+
+    .home-actions .status-pill {
+        min-height: 38px !important;
+    }
+}
+
+/* Very short screens: preserve layout instead of spilling sideways. */
+@media (max-height: 700px) {
+    .app-container {
+        gap: 6px !important;
+    }
+
+    .tuner-panel {
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+        gap: 5px !important;
+    }
+
+    .tape-wrapper {
+        height: 38px !important;
+    }
+
+    .ptt-stage {
+        width: clamp(146px, 24svh, 188px) !important;
+        height: clamp(146px, 24svh, 188px) !important;
+    }
+
+    #ptt-button {
+        width: clamp(94px, 15.5svh, 120px) !important;
+        height: clamp(94px, 15.5svh, 120px) !important;
+    }
+}
